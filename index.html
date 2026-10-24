@@ -212,7 +212,7 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;backg
     <div id="mort"></div>
   </div>
 
-  <div class="sec">
+  <div class="sec" id="outSec">
     <p class="label">All outgoings</p>
     <div class="card" style="margin:0">
       <div class="bar" id="outBar"></div>
@@ -375,7 +375,7 @@ function render() {
 
   // mortgage (personal tab)
   const mg = data.mortgage;
-  $('mortSec').hidden = tab !== 'personal';
+  $('mortSec').hidden = $('outSec').hidden = tab !== 'personal';
   if (mg) {
     const nx = mortNext(mg.day), days = Math.round((nx - t) / 864e5);
     const cls = days === 0 ? 'today' : days <= 7 ? 'soon' : '';
@@ -394,8 +394,7 @@ function render() {
 
   // all outgoings
   const parts = [
-    { name: 'Personal bills', v: monthly(data.personal), c: '#87ceeb' },
-    { name: 'Work bills', v: monthly(data.work), c: '#7a3cf0' },
+    { name: 'Bills', v: monthly(data.personal), c: '#87ceeb' },
     { name: 'Mortgage', v: mg ? mg.amount : 0, c: '#4169e1' },
   ];
   const total = parts.reduce((a, x) => a + x.v, 0);
