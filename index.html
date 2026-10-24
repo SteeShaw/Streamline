@@ -98,7 +98,7 @@ h1 small{font-size:.38em;font-weight:700;letter-spacing:-.02em;color:var(--muted
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;background:var(--bg);border-radius:28px 28px 0 0;padding:22px 16px calc(22px + env(safe-area-inset-bottom));
   max-width:640px;margin:0 auto;transform:translateY(105%);transition:transform .24s cubic-bezier(.2,.8,.2,1)}
 body.sheet-open .scrim{opacity:1;pointer-events:auto}
-body.sheet-open .sheet{transform:none}
+body.sheet-open:not(.m-open) #sheet,body.m-open #mSheet{transform:none}
 .sheet h3{font-size:30px;font-weight:800;letter-spacing:-.03em;margin:0 0 14px}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .field{background:var(--soft);border-radius:18px;padding:12px 14px;display:block}
@@ -145,6 +145,23 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;backg
 .brand em{font-style:normal;background:linear-gradient(90deg,var(--key),var(--sky));-webkit-background-clip:text;background-clip:text;color:transparent}
 @media (prefers-reduced-motion: reduce){.brand .flow path{animation:none}}
 
+/* mortgage + outgoings */
+.sec{margin-bottom:28px}
+.mort{display:flex;gap:14px;align-items:center;width:100%;text-align:left;margin-bottom:0}
+.mort .tile{--g1:#4169e1;--g2:#87ceeb}
+.mort .tile svg{display:block}
+.mort-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:18px;border-radius:20px;border:1.5px dashed color-mix(in srgb,var(--key) 55%,var(--line));color:var(--muted);font-weight:700;font-size:15px}
+.mort-add:hover{color:var(--ink)}
+.out{display:grid;grid-template-columns:1fr auto;gap:8px 0;font-size:15px;margin:0}
+.out dt{color:var(--muted);display:flex;align-items:center;gap:8px}
+.out dt i{width:8px;height:8px;border-radius:99px;background:var(--c,var(--key))}
+.out dd{margin:0;padding-left:12px;font-weight:700;text-align:right}
+.out .tot{border-top:1px solid color-mix(in srgb,var(--key) 45%,transparent);padding-top:10px;margin-top:2px;color:var(--ink);font-weight:800;font-size:17px}
+.out dd.tot{font-size:20px;letter-spacing:-.02em}
+.bar{display:flex;height:6px;border-radius:99px;overflow:hidden;gap:2px;margin:4px 0 14px;background:var(--line)}
+.bar i{display:block;height:100%}
+.out-yr{font-size:13px;color:var(--muted);margin-top:8px;text-align:right}
+
 .foot{display:flex;gap:8px;justify-content:center;margin-top:32px}
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(8px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70}
 .toast.show{opacity:1;transform:translateX(-50%)}
@@ -190,6 +207,20 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;backg
     </div>
   </div>
 
+  <div class="sec" id="mortSec">
+    <div class="lhead"><p class="label">Mortgage</p></div>
+    <div id="mort"></div>
+  </div>
+
+  <div class="sec">
+    <p class="label">All outgoings</p>
+    <div class="card" style="margin:0">
+      <div class="bar" id="outBar"></div>
+      <dl class="out" id="out"></dl>
+      <div class="out-yr" id="outYr"></div>
+    </div>
+  </div>
+
   <div class="lhead">
     <p class="label">Upcoming</p>
     <button class="pill" id="addBtn">+ Add bill</button>
@@ -224,6 +255,20 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;backg
     <button type="button" class="pill danger" id="fDelete" hidden>Delete</button>
     <button type="button" class="pill ghost" id="fCancel">Cancel</button>
     <button type="submit" class="pill grow" id="fSubmit">Add bill</button>
+  </div>
+</form>
+
+<form class="sheet" id="mSheet">
+  <h3>Mortgage</h3>
+  <div class="fields">
+    <label class="field full"><span>Lender</span><input id="mLender" placeholder="Nationwide" autocomplete="off"></label>
+    <label class="field"><span>Monthly £</span><input id="mAmount" class="big" type="number" inputmode="decimal" step="0.01" min="0" required placeholder="0.00"></label>
+    <label class="field"><span>Paid on day</span><input id="mDay" class="big" type="number" inputmode="numeric" min="1" max="31" required placeholder="1"></label>
+  </div>
+  <div class="sheet-btns">
+    <button type="button" class="pill danger" id="mDelete" hidden>Remove</button>
+    <button type="button" class="pill ghost" id="mCancel">Cancel</button>
+    <button type="submit" class="pill grow">Save</button>
   </div>
 </form>
 
@@ -273,6 +318,13 @@ function dueIn(bill, from, to) {
   return total;
 }
 const monthly = bills => bills.reduce((s, b) => s + b.amount * PER_MONTH[b.freq], 0);
+function mortNext(day, from = today()) {
+  const clamp = (y, m) => new Date(y, m, Math.min(day, new Date(y, m + 1, 0).getDate()));
+  let d = clamp(from.getFullYear(), from.getMonth());
+  if (d < from) d = clamp(from.getFullYear(), from.getMonth() + 1);
+  return d;
+}
+const HOUSE = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg>';
 const whenText = days => days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `In ${days} days`;
 
 function render() {
@@ -320,6 +372,37 @@ function render() {
       <div class="ramt">${gbp(b.amount)}${per}</div>
     </button>`;
   }).join('') : `<div class="empty-list">Your ${tab} bills will show here, soonest first.</div>`;
+
+  // mortgage (personal tab)
+  const mg = data.mortgage;
+  $('mortSec').hidden = tab !== 'personal';
+  if (mg) {
+    const nx = mortNext(mg.day), days = Math.round((nx - t) / 864e5);
+    const cls = days === 0 ? 'today' : days <= 7 ? 'soon' : '';
+    $('mort').innerHTML = `<button class="row mort" id="mortRow">
+      <div class="tile">${HOUSE}</div>
+      <div class="rbody">
+        <div class="rday ${cls}">${whenText(days)}</div>
+        <div class="rtitle">${esc(mg.lender || 'Mortgage')}</div>
+        <div class="rmeta">Monthly · ${nx.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
+      </div>
+      <div class="ramt">${gbp(mg.amount)}</div>
+    </button>`;
+  } else {
+    $('mort').innerHTML = `<button class="mort-add" id="mortRow">+ Add your mortgage</button>`;
+  }
+
+  // all outgoings
+  const parts = [
+    { name: 'Personal bills', v: monthly(data.personal), c: '#87ceeb' },
+    { name: 'Work bills', v: monthly(data.work), c: '#7a3cf0' },
+    { name: 'Mortgage', v: mg ? mg.amount : 0, c: '#4169e1' },
+  ];
+  const total = parts.reduce((a, x) => a + x.v, 0);
+  $('outBar').innerHTML = total ? parts.filter(x => x.v).map(x => `<i style="flex:${x.v};background:${x.c}"></i>`).join('') : '';
+  $('out').innerHTML = parts.map(x => `<dt><i style="--c:${x.c}"></i>${x.name}</dt><dd>${gbp(x.v)}</dd>`).join('')
+    + `<dt class="tot">Total per month</dt><dd class="tot">${gbp(total)}</dd>`;
+  $('outYr').textContent = `${gbp(total * 12, 0)} a year`;
 }
 
 function openSheet(bill) {
@@ -341,7 +424,7 @@ function toast(msg) { const el = $('toast'); el.textContent = msg; el.classList.
 
 $('addBtn').addEventListener('click', () => openSheet());
 $('fCancel').addEventListener('click', closeSheet);
-$('scrim').addEventListener('click', closeSheet);
+$('scrim').addEventListener('click', () => { closeSheet(); closeMort(); });
 $('list').addEventListener('click', e => {
   const row = e.target.closest('.row'); if (!row) return;
   openSheet(data[tab].find(b => b.id === row.dataset.id));
@@ -364,6 +447,28 @@ $('fDelete').addEventListener('click', () => {
   if (!confirm('Delete this bill?')) return;
   data[tab] = data[tab].filter(b => b.id !== editingId);
   save(); closeSheet(); render(); toast('Deleted');
+});
+
+// mortgage sheet
+function openMort() {
+  const mg = data.mortgage;
+  $('mLender').value = mg ? mg.lender : '';
+  $('mAmount').value = mg ? mg.amount : '';
+  $('mDay').value = mg ? mg.day : '';
+  $('mDelete').hidden = !mg;
+  document.body.classList.add('sheet-open', 'm-open');
+}
+const closeMort = () => { document.body.classList.remove('sheet-open', 'm-open'); document.activeElement.blur(); };
+$('mort').addEventListener('click', e => { if (e.target.closest('#mortRow')) openMort(); });
+$('mCancel').addEventListener('click', closeMort);
+$('mSheet').addEventListener('submit', e => {
+  e.preventDefault();
+  data.mortgage = { lender: $('mLender').value.trim(), amount: parseFloat($('mAmount').value), day: Math.min(31, Math.max(1, parseInt($('mDay').value, 10))) };
+  save(); closeMort(); render(); toast('Mortgage saved');
+});
+$('mDelete').addEventListener('click', () => {
+  if (!confirm('Remove your mortgage?')) return;
+  delete data.mortgage; save(); closeMort(); render(); toast('Removed');
 });
 
 // mode switcher
