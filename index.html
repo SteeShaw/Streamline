@@ -112,11 +112,38 @@ body.sheet-open .sheet{transform:none}
 .sheet-btns .grow{flex:1}
 
 /* blue glow rising from the bottom of the screen */
-.glow{position:fixed;left:0;right:0;bottom:0;height:60vh;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(120% 70% at 50% 100%,rgba(65,105,225,.85) 0%,rgba(65,105,225,0) 70%),
-    linear-gradient(to top,rgba(65,105,225,.55) 0%,rgba(135,206,235,.35) 30%,rgba(135,206,235,0) 100%)}
+.glow{position:fixed;left:0;right:0;bottom:0;height:62vh;pointer-events:none;z-index:0;overflow:hidden;
+  background:linear-gradient(to top,rgba(65,105,225,.6) 0%,rgba(135,206,235,.3) 32%,rgba(135,206,235,0) 100%)}
+.glow::before,.glow::after{content:"";position:absolute;left:-30%;right:-30%;bottom:-30%;height:120%;filter:blur(40px)}
+.glow::before{background:radial-gradient(55% 60% at 35% 100%,rgba(65,105,225,1),rgba(65,105,225,0) 75%);animation:glowA 14s ease-in-out infinite alternate}
+.glow::after{background:radial-gradient(45% 50% at 70% 100%,rgba(135,206,235,.7),rgba(135,206,235,0) 70%);mix-blend-mode:screen;animation:glowB 19s ease-in-out infinite alternate}
+@keyframes glowA{0%{transform:translate(-8%,4%) scale(1)}50%{transform:translate(10%,-4%) scale(1.15)}100%{transform:translate(-2%,2%) scale(1.05)}}
+@keyframes glowB{0%{transform:translate(10%,6%) scale(1.1);opacity:.7}50%{transform:translate(-12%,-2%) scale(.95);opacity:1}100%{transform:translate(4%,0) scale(1.2);opacity:.8}}
+@media (prefers-reduced-motion: reduce){.glow::before,.glow::after{animation:none}}
 .wrap{position:relative;z-index:1}
+/* blue key lines */
+:root{--key:#4169e1;--sky:#87ceeb}
+nav{padding-bottom:16px}
+nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,var(--key),var(--sky) 40%,transparent)}
+.label{display:flex;align-items:center;gap:8px}
+.label::before{content:"";width:16px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--key),var(--sky))}
+.card{position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;left:18px;right:18px;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--sky),var(--key),transparent);opacity:.9}
+.stat+.stat{padding-left:14px;border-left:1px solid color-mix(in srgb,var(--key) 45%,transparent)}
+.row{border-bottom:0;position:relative}
+.row:not(:last-child)::after{content:"";position:absolute;left:66px;right:0;bottom:0;height:1px;background:linear-gradient(90deg,color-mix(in srgb,var(--key) 55%,transparent),color-mix(in srgb,var(--sky) 25%,transparent) 60%,transparent)}
+@media (max-width:480px){.row:not(:last-child)::after{left:54px}}
+.hero{box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 18px 40px -18px color-mix(in srgb,var(--g2) 70%,transparent)}
+
+/* logo */
+.brand{display:inline-flex;align-items:center;gap:9px;font-size:20px;letter-spacing:-.035em}
+.brand svg{flex:none}
+.brand .flow path{stroke-dasharray:22 8;animation:flow 2.4s linear infinite}
+.brand .flow path:nth-child(2){animation-duration:3.1s}
+.brand .flow path:nth-child(3){animation-duration:3.8s}
+@keyframes flow{to{stroke-dashoffset:-30}}
+.brand em{font-style:normal;background:linear-gradient(90deg,var(--key),var(--sky));-webkit-background-clip:text;background-clip:text;color:transparent}
+@media (prefers-reduced-motion: reduce){.brand .flow path{animation:none}}
 
 .foot{display:flex;gap:8px;justify-content:center;margin-top:32px}
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(8px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70}
@@ -127,7 +154,17 @@ body.sheet-open .sheet{transform:none}
 <div class="glow" aria-hidden="true"></div>
 <div class="wrap">
   <nav>
-    <div class="brand">Streamline</div>
+    <div class="brand">
+      <svg width="28" height="22" viewBox="0 0 28 22" fill="none" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" x2="1"><stop offset="0" stop-color="#4169e1"/><stop offset="1" stop-color="#87ceeb"/></linearGradient></defs>
+        <g class="flow" stroke="url(#lg)" stroke-width="3" stroke-linecap="round">
+          <path d="M2 4c6 0 8 3 14 3s8-3 10-3"/>
+          <path d="M2 11c6 0 8 3 14 3s8-3 10-3"/>
+          <path d="M2 18c6 0 8 3 14 3s6-2 8-2"/>
+        </g>
+      </svg>
+      <span>Stream<em>line</em></span>
+    </div>
     <div class="mode" id="mode">
       <button class="modebtn" id="modeBtn"><span id="modeLabel">Personal</span>
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
