@@ -118,21 +118,6 @@ body.sheet-open .sheet{transform:none}
     linear-gradient(to top,rgba(65,105,225,.55) 0%,rgba(135,206,235,.35) 30%,rgba(135,206,235,0) 100%)}
 .wrap{position:relative;z-index:1}
 
-/* liquid glass */
-:root{--gl-fill:rgba(255,255,255,.55);--gl-edge:rgba(255,255,255,.9);--gl-rim:rgba(0,0,0,.08);--gl-shadow:rgba(0,0,0,.12);--gl-ink:var(--ink)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--gl-fill:rgba(255,255,255,.08);--gl-edge:rgba(255,255,255,.45);--gl-rim:rgba(255,255,255,.14);--gl-shadow:rgba(0,0,0,.45)}}
-:root[data-theme="dark"]{--gl-fill:rgba(255,255,255,.08);--gl-edge:rgba(255,255,255,.45);--gl-rim:rgba(255,255,255,.14);--gl-shadow:rgba(0,0,0,.45)}
-.glass,.pill.glass{position:relative;isolation:isolate;overflow:hidden;color:var(--gl-ink);background:var(--gl-fill);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
-  box-shadow:inset 0 1px 0 var(--gl-edge),inset 0 -1px 1px rgba(255,255,255,.12),inset 0 0 0 1px var(--gl-rim),0 10px 28px -10px var(--gl-shadow);
-  transition:transform .18s cubic-bezier(.2,.8,.2,1),background .18s}
-.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
-  background:radial-gradient(120% 80% at 30% -10%,rgba(255,255,255,.45),rgba(255,255,255,0) 55%),
-             radial-gradient(80% 60% at 85% 120%,rgba(135,206,235,.25),rgba(135,206,235,0) 60%)}
-.glass:active{transform:scale(.96)}
-.menu.glass{position:absolute;overflow:visible;--gl-fill:color-mix(in srgb,var(--bg) 55%,transparent)}
-.menu.glass::before{display:none}
-
 .foot{display:flex;gap:8px;justify-content:center;margin-top:32px}
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(8px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70}
 .toast.show{opacity:1;transform:translateX(-50%)}
@@ -144,10 +129,10 @@ body.sheet-open .sheet{transform:none}
   <nav>
     <div class="brand">Streamline</div>
     <div class="mode" id="mode">
-      <button class="modebtn glass" id="modeBtn"><span id="modeLabel">Personal</span>
+      <button class="modebtn" id="modeBtn"><span id="modeLabel">Personal</span>
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <div class="menu glass">
+      <div class="menu">
         <button class="tab" data-tab="personal"><b>Personal</b><span id="subPersonal"></span></button>
         <button class="tab" data-tab="work"><b>Work</b><span id="subWork"></span></button>
       </div>
@@ -170,13 +155,13 @@ body.sheet-open .sheet{transform:none}
 
   <div class="lhead">
     <p class="label">Upcoming</p>
-    <button class="pill glass" id="addBtn">+ Add bill</button>
+    <button class="pill" id="addBtn">+ Add bill</button>
   </div>
   <div id="list"></div>
 
   <div class="foot">
-    <button class="pill glass" id="exportBtn">Export</button>
-    <button class="pill glass" id="importBtn">Import</button>
+    <button class="pill ghost" id="exportBtn">Export</button>
+    <button class="pill ghost" id="importBtn">Import</button>
     <input type="file" id="importFile" accept=".json" hidden>
   </div>
 </div>
@@ -200,7 +185,7 @@ body.sheet-open .sheet{transform:none}
   </div>
   <div class="sheet-btns">
     <button type="button" class="pill danger" id="fDelete" hidden>Delete</button>
-    <button type="button" class="pill glass" id="fCancel">Cancel</button>
+    <button type="button" class="pill ghost" id="fCancel">Cancel</button>
     <button type="submit" class="pill grow" id="fSubmit">Add bill</button>
   </div>
 </form>
